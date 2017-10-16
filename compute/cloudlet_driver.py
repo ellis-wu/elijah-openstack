@@ -257,6 +257,18 @@ class CloudletDriver(libvirt_driver.LibvirtDriver):
         self._get_cache_image(context, instance, diskhash_snap_id)
         self._get_cache_image(context, instance, memhash_snap_id)
 
+        # remove neutron network interface
+        vir_xml = ElementTree.fromstring(virt_dom.XMLDesc())
+        nic_xml = vir_xml.findall('devices/interface')
+        neutron_nic = None
+        for nic in nic_xml:
+            if nic.get('type') == 'bridge':
+                neutron_nic = ElementTree.tostring(nic)
+
+        if neutron_nic is not None:
+            if virt_dom.detachDevice(neutron_nic) != 0:
+                LOG.info("neutron network detach failed")
+
         # pause VM
         self.pause(instance)
 
@@ -312,6 +324,18 @@ class CloudletDriver(libvirt_driver.LibvirtDriver):
             context, instance, memhash_snap_id)
         base_vm_paths = [basedisk_path, basemem_path,
                          diskhash_path, memhash_path]
+
+        # remove neutron network interface
+        vir_xml = ElementTree.fromstring(virt_dom.XMLDesc())
+        nic_xml = vir_xml.findall('devices/interface')
+        neutron_nic = None
+        for nic in nic_xml:
+            if nic.get('type') == 'bridge':
+                neutron_nic = ElementTree.tostring(nic)
+
+        if neutron_nic is not None:
+            if virt_dom.detachDevice(neutron_nic) != 0:
+                LOG.info("neutron network detach failed")
 
         update_task_state(task_state=task_states.IMAGE_PENDING_UPLOAD,
                           expected_state=None)
@@ -896,7 +920,8 @@ class CloudletDriver(libvirt_driver.LibvirtDriver):
             Cloudlet_Const.CLOUDLETFS_PATH, Cloudlet_Const.CHUNK_SIZE,
             base_diskpath, launch_disk_size, base_mempath, launch_memory_size,
             resumed_disk=launch_disk,  disk_overlay_map=disk_overlay_map,
-            resumed_memory=launch_memory, memory_overlay_map=memory_overlay_map
+            resumed_memory=launch_memory, memory_overlay_map=memory_overlay_map,
+            valid_bit=1
         )
         synthesized_vm = synthesis.SynthesizedVM(
             launch_disk, launch_memory, fuse,

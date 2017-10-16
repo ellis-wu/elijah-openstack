@@ -71,9 +71,11 @@ class CloudletActionController(wsgi.Controller):
 
         dest_ip = None
         for node in compute_nodes:
-            node_name = node.get('hypervisor_hostname', None)
+            # node_name = node.get('hypervisor_hostname', None)
+            node_name = node.hypervisor_hostname
             if str(node_name) == str(instance_hostname):
-                dest_ip = node.get('host_ip', None)
+                # dest_ip = node.get('host_ip', None)
+                dest_ip = node.host_ip
 
         # set port forwarding
         if dest_ip:

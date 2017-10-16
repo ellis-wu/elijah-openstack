@@ -371,7 +371,7 @@ class CloudletAPI(nova_rpc.ComputeAPI):
                 "name": instance_name, "imageRef": str(basevm_uuid),
                 "flavorRef": flavor_id, "metadata": meta_data,
                 "min_count": "1", "max_count": "1",
-                "key_name": None,
+                # "key_name": None,
             }
         }
         params = jsonutils.dumps(s)
