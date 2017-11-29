@@ -464,19 +464,14 @@ class PortForwarding(threading.Thread):
     def port_forwarding(self):
         local_addr = ('0.0.0.0', self.source_port)
         remote_addr = (self.dest_ip, self.dest_port)
+        LOG.info("Port forwarding starts from %s to %s" % (str(local_addr),
+                                                           str(remote_addr)))
+        listener = eventlet.listen(local_addr)
+        client, addr = listener.accept()
+        server = eventlet.connect(remote_addr)
+        eventlet.spawn_n(self.forward, client, server, self.closed_callback)
+        eventlet.spawn_n(self.forward, server, client)
 
-        while True:
-            import socket
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            remote_port = sock.connect_ex(remote_addr)
-            if remote_port == 0:
-                LOG.info("Port forwarding starts from %s to %s" % (str(local_addr),
-                                                                   str(remote_addr)))
-                listener = eventlet.listen(local_addr)
-                client, addr = listener.accept()
-                server = eventlet.connect(remote_addr)
-                eventlet.spawn_n(self.forward, client, server, self.closed_callback)
-                eventlet.spawn_n(self.forward, server, client)
 
     def closed_callback(self):
         LOG.info("Port forwadring finishes")

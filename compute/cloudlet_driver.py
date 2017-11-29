@@ -18,6 +18,7 @@
 
 
 import os
+import time
 import uuid
 import hashlib
 import subprocess
@@ -418,6 +419,7 @@ class CloudletDriver(libvirt_driver.LibvirtDriver):
         LOG.debug("start handoff send process")
         handoff_ds_send.to_file(handoff_send_datafile)
         cmd = ["/usr/local/bin/handoff-proc", "%s" % handoff_send_datafile]
+        time.sleep(3)
         LOG.debug("subprocess: %s" % cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, close_fds=True)
 
